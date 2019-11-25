@@ -28,6 +28,9 @@ if [[ "$SSHPORT" != "" ]]; then
     SSH="--ssh-port=$SSHPORT $SSH"
 fi
 
+if [[ "$CLONE_URL" != "" ]]; then
+    CLONE_URL="--clone-url ${CLONE_URL}"
+fi
 
 mkdir -p /tmp/builds
 chmod 777 /tmp/builds
@@ -45,6 +48,7 @@ gitlab-runner register \
     ${MOUNTDOCKERSOCKET} \
     ${DOCKERNETWORKMODE} \
     ${SSH} \
+    ${CLONE_URL} \
     --description "${RUNNERNAME:-gitlab runner}" \
     --tag-list "${TAGLIST:-docker,auto}" \
     --run-untagged="true" \
