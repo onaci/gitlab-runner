@@ -27,8 +27,16 @@ fi
 if [[ "$SSHPORT" != "" ]]; then
     SSH="--ssh-port=$SSHPORT $SSH"
 fi
+
+mkdir -p /builds
+chmod 777 /builds
+mkdir -p /cache
+chmod 777 /cache
+
 gitlab-runner register \
     --non-interactive \
+    --builds-dir=/builds \
+    --cache-dir=/cache \
     --url "${GITLABURL}" \
     --registration-token "${RUNNERTOKEN}" \
     --executor "${EXECUTOR:-docker}" \
