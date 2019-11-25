@@ -15,6 +15,18 @@ if [[ "${DOCKERNETWORKMODE}" != "" ]]; then
     DOCKERNETWORKMODE="--docker-network-mode ${DOCKERNETWORKMODE}"
 fi
 
+if [[ "$SSHUSER" != "" ]]; then
+    SSH="--ssh-user=$SSHUSER $SSH"
+fi
+if [[ "$SSHKEY" != "" ]]; then
+    SSH="--ssh-identity-file=$SSHKEY $SSH"
+fi
+if [[ "$SSHHOST" != "" ]]; then
+    SSH="--ssh-host=$SSHHOST $SSH"
+fi
+if [[ "$SSHPORT" != "" ]]; then
+    SSH="--ssh-port=$SSHPORT $SSH"
+fi
 gitlab-runner register \
     --non-interactive \
     --url "${GITLABURL}" \
@@ -23,6 +35,7 @@ gitlab-runner register \
     --docker-image "${DOCKERIMAGE:-alpine:latest}" \
     ${MOUNTDOCKERSOCKET} \
     ${DOCKERNETWORKMODE} \
+    ${SSH} \
     --description "${RUNNERNAME:-gitlab runner}" \
     --tag-list "${TAGLIST:-docker,auto}" \
     --run-untagged="true" \
