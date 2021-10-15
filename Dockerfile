@@ -1,9 +1,9 @@
-FROM gitlab/gitlab-runner:latest
+FROM gitlab/gitlab-runner:alpine
 
-ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update \
-    && apt-get dist-upgrade -y \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk update \
+    && apk upgrade \
+    && apk --no-cache add \
+        bash \
+        ca-certificates
 
 ADD register_and_run.sh /
