@@ -41,15 +41,15 @@ if [[ -n "${CLONE}_URL" ]]; then
     options+=( "--clone-url" "${CLONE_URL}" )
 fi
 
-mkdir -p /tmp/builds
-chmod 777 /tmp/builds
-mkdir -p /tmp/cache
-chmod 777 /tmp/cache
+BUILDS_DIR="/tmp/builds"
+CACHE_DIR="/tmp/cache"
+
+mkdir -p -m 777 "${BUILDS_DIR}" "${CACHE_DIR}"
 
 gitlab-runner register \
     --non-interactive \
-    --builds-dir=/tmp/builds \
-    --cache-dir=/tmp/cache \
+    --builds-dir "${BUILDS_DIR}" \
+    --cache-dir "${CACHE_DIR}" \
     --url "${GITLABURL}" \
     --registration-token "${RUNNERTOKEN}" \
     --executor "${EXECUTOR}" \
