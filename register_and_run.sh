@@ -1,15 +1,22 @@
 #!/bin/bash -ex
 
+# Set some sensible default values
+: "${EXECUTOR:=docker}"
+: "${DOCKERIMAGE:=alpine:latest}"
+: "${RUNNERNAME:=gitlab runner}"
+: "${TAGLIST:=docker,auto}"
+
 echo "GITLABURL: ${GITLABURL}"
 echo "RUNNERTOKEN: ${RUNNERTOKEN}"
-echo "EXECUTOR: ${EXECUTOR:-docker}"
-echo "DOCKERIMAGE: ${DOCKERIMAGE:-alpine:latest}"
-echo "RUNNERNAME: ${RUNNERNAME:-gitlab runner}"
-echo "TAGLIST: ${TAGLIST:-docker,auto}"
+echo "EXECUTOR: ${EXECUTOR}"
+echo "DOCKERIMAGE: ${DOCKERIMAGE}"
+echo "RUNNERNAME: ${RUNNERNAME}"
+echo "TAGLIST: ${TAGLIST}"
 echo "MOUNTDOCKERSOCKET: ${MOUNTDOCKERSOCKET}"
 echo "DOCKERNETWORKMODE: ${DOCKERNETWORKMODE}"
-options=()
 
+# Translate some environment variables to command line flags
+options=()
 if [[ -n "${MOUNTDOCKERSOCKET}" ]]; then
     options+=( "--docker-volumes" "${MOUNTDOCKERSOCKET}" )
 fi
@@ -45,11 +52,11 @@ gitlab-runner register \
     --cache-dir=/tmp/cache \
     --url "${GITLABURL}" \
     --registration-token "${RUNNERTOKEN}" \
-    --executor "${EXECUTOR:-docker}" \
-    --docker-image "${DOCKERIMAGE:-alpine:latest}" \
+    --executor "${EXECUTOR}" \
+    --docker-image "${DOCKERIMAGE}" \
     "${options[@]}" \
-    --description "${RUNNERNAME:-gitlab runner}" \
-    --tag-list "${TAGLIST:-docker,auto}" \
+    --description "${RUNNERNAME}" \
+    --tag-list "${TAGLIST}" \
     --run-untagged="true" \
     --locked="false" \
     --access-level="not_protected"
