@@ -21,6 +21,9 @@ echo "TAGLIST: ${TAGLIST}"
 echo "MOUNTDOCKERSOCKET: ${MOUNTDOCKERSOCKET}"
 echo "DOCKERNETWORKMODE: ${DOCKERNETWORKMODE}"
 
+BUILDS_DIR="/tmp/builds"
+CACHE_DIR="/tmp/cache"
+
 # Translate some environment variables to command line flags
 options=()
 if [[ -n "${MOUNTDOCKERSOCKET}" ]]; then
@@ -47,8 +50,9 @@ if [[ -n "${CLONE_URL}" ]]; then
     options+=( "--clone-url" "${CLONE_URL}" )
 fi
 
-BUILDS_DIR="/tmp/builds"
-CACHE_DIR="/tmp/cache"
+if [[ "${ENABLECACHE}" == "1" ]]; then
+	options+=( "--docker-volumes" "${CACHE_DIR}" )
+fi
 
 mkdir -p -m 777 "${BUILDS_DIR}" "${CACHE_DIR}"
 
@@ -56,7 +60,6 @@ gitlab-runner register \
     --non-interactive \
     --builds-dir "${BUILDS_DIR}" \
     --cache-dir "${CACHE_DIR}" \
-    --docker-volumes "${CACHE_DIR}" \
     --url "${GITLABURL}" \
     --registration-token "${RUNNERTOKEN}" \
     --executor "${EXECUTOR}" \
