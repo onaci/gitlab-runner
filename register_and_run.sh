@@ -37,7 +37,7 @@ if [[ -n "${SSHPORT}" ]]; then
     options+=( "--ssh-port" "${SSHPORT}" )
 fi
 
-if [[ -n "${CLONE}_URL" ]]; then
+if [[ -n "${CLONE_URL}" ]]; then
     options+=( "--clone-url" "${CLONE_URL}" )
 fi
 
