@@ -3,15 +3,7 @@
 docker_image="onaci/gitlab-runner:alpine"
 runner_name="test-runner-$HOSTNAME"
 
-_fold() {
-	if command -v fold &>/dev/null ; then
-		fold
-	else
-		cat
-	fi
-}
-
-intro() { _fold <<INTRO
+intro() { cat <<INTRO
 Start a Gitlab CI runner on your local machine. This runner will connect to the
 specified Gitlab instance and run CI jobs. This script can be used to:
 
@@ -21,7 +13,7 @@ specified Gitlab instance and run CI jobs. This script can be used to:
 INTRO
 
 }
-usage() { _fold <<USAGE
+usage() { cat <<USAGE
 Usage:
 	$0 [--image docker-image] [--name runner-name]
 		<gitlab-url> <runner-token>
