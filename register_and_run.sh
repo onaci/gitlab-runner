@@ -1,56 +1,72 @@
 #!/bin/bash -ex
 
+error() { echo "$@" >&2 ; exit 1 ; }
+
+# Check for some required environment variables
+[[ -n "${GITLABURL}" ]] || error "GITLABURL environment variable must be set"
+[[ -n "${RUNNERTOKEN}" ]] || error "RUNNERTOKEN environment variable must be set"
+
+# Set some sensible default values
+: "${EXECUTOR:=docker}"
+: "${DOCKERIMAGE:=alpine:latest}"
+: "${RUNNERNAME:=gitlab runner}"
+: "${TAGLIST:=docker,auto}"
+
 echo "GITLABURL: ${GITLABURL}"
 echo "RUNNERTOKEN: ${RUNNERTOKEN}"
-echo "EXECUTOR: ${EXECUTOR:-docker}"
-echo "DOCKERIMAGE: ${DOCKERIMAGE:-alpine:latest}"
-echo "RUNNERNAME: ${RUNNERNAME:-gitlab runner}"
-echo "TAGLIST: ${TAGLIST:-docker,auto}"
+echo "EXECUTOR: ${EXECUTOR}"
+echo "DOCKERIMAGE: ${DOCKERIMAGE}"
+echo "RUNNERNAME: ${RUNNERNAME}"
+echo "TAGLIST: ${TAGLIST}"
 echo "MOUNTDOCKERSOCKET: ${MOUNTDOCKERSOCKET}"
-if [[ "${MOUNTDOCKERSOCKET}" != "" ]]; then
-    MOUNTDOCKERSOCKET="--docker-volumes ${MOUNTDOCKERSOCKET}"
-fi
 echo "DOCKERNETWORKMODE: ${DOCKERNETWORKMODE}"
-if [[ "${DOCKERNETWORKMODE}" != "" ]]; then
-    DOCKERNETWORKMODE="--docker-network-mode ${DOCKERNETWORKMODE}"
+
+BUILDS_DIR="/tmp/builds"
+CACHE_DIR="/tmp/cache"
+
+# Translate some environment variables to command line flags
+options=()
+if [[ -n "${MOUNTDOCKERSOCKET}" ]]; then
+    options+=( "--docker-volumes" "${MOUNTDOCKERSOCKET}" )
+fi
+if [[ -n "${DOCKERNETWORKMODE}" ]]; then
+    options+=( "--docker-network-mode" "${DOCKERNETWORKMODE}" )
 fi
 
-if [[ "$SSHUSER" != "" ]]; then
-    SSH="--ssh-user=$SSHUSER $SSH"
+if [[ -n "${SSHUSER}" ]]; then
+    options+=( "--ssh-user" "${SSHUSER}" )
 fi
-if [[ "$SSHKEY" != "" ]]; then
-    SSH="--ssh-identity-file=$SSHKEY $SSH"
+if [[ -n "${SSHKEY}" ]]; then
+    options+=( "--ssh-identity-file" "${SSHKEY}" )
 fi
-if [[ "$SSHHOST" != "" ]]; then
-    SSH="--ssh-host=$SSHHOST $SSH"
+if [[ -n "${SSHHOST}" ]]; then
+    options+=( "--ssh-host" "${SSHHOST}" )
 fi
-if [[ "$SSHPORT" != "" ]]; then
-    SSH="--ssh-port=$SSHPORT $SSH"
-fi
-
-if [[ "$CLONE_URL" != "" ]]; then
-    CLONE_URL="--clone-url ${CLONE_URL}"
+if [[ -n "${SSHPORT}" ]]; then
+    options+=( "--ssh-port" "${SSHPORT}" )
 fi
 
-mkdir -p /tmp/builds
-chmod 777 /tmp/builds
-mkdir -p /tmp/cache
-chmod 777 /tmp/cache
+if [[ -n "${CLONE_URL}" ]]; then
+    options+=( "--clone-url" "${CLONE_URL}" )
+fi
+
+if [[ "${ENABLECACHE}" == "1" ]]; then
+	options+=( "--docker-volumes" "${CACHE_DIR}" )
+fi
+
+mkdir -p -m 777 "${BUILDS_DIR}" "${CACHE_DIR}"
 
 gitlab-runner register \
     --non-interactive \
-    --builds-dir=/tmp/builds \
-    --cache-dir=/tmp/cache \
+    --builds-dir "${BUILDS_DIR}" \
+    --cache-dir "${CACHE_DIR}" \
     --url "${GITLABURL}" \
     --registration-token "${RUNNERTOKEN}" \
-    --executor "${EXECUTOR:-docker}" \
-    --docker-image "${DOCKERIMAGE:-alpine:latest}" \
-    ${MOUNTDOCKERSOCKET} \
-    ${DOCKERNETWORKMODE} \
-    ${SSH} \
-    ${CLONE_URL} \
-    --description "${RUNNERNAME:-gitlab runner}" \
-    --tag-list "${TAGLIST:-docker,auto}" \
+    --executor "${EXECUTOR}" \
+    --docker-image "${DOCKERIMAGE}" \
+    "${options[@]}" \
+    --description "${RUNNERNAME}" \
+    --tag-list "${TAGLIST}" \
     --run-untagged="true" \
     --locked="false" \
     --access-level="not_protected"
