@@ -1,5 +1,11 @@
 #!/bin/bash -ex
 
+error() { echo "$@" >&2 ; exit 1 ; }
+
+# Check for some required environment variables
+[[ -n "${GITLABURL}" ]] || error "GITLABURL environment variable must be set"
+[[ -n "${RUNNERTOKEN}" ]] || error "RUNNERTOKEN environment variable must be set"
+
 # Set some sensible default values
 : "${EXECUTOR:=docker}"
 : "${DOCKERIMAGE:=alpine:latest}"
