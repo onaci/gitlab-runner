@@ -7,29 +7,31 @@ echo "DOCKERIMAGE: ${DOCKERIMAGE:-alpine:latest}"
 echo "RUNNERNAME: ${RUNNERNAME:-gitlab runner}"
 echo "TAGLIST: ${TAGLIST:-docker,auto}"
 echo "MOUNTDOCKERSOCKET: ${MOUNTDOCKERSOCKET}"
-if [[ "${MOUNTDOCKERSOCKET}" != "" ]]; then
-    MOUNTDOCKERSOCKET="--docker-volumes ${MOUNTDOCKERSOCKET}"
-fi
 echo "DOCKERNETWORKMODE: ${DOCKERNETWORKMODE}"
-if [[ "${DOCKERNETWORKMODE}" != "" ]]; then
-    DOCKERNETWORKMODE="--docker-network-mode ${DOCKERNETWORKMODE}"
+options=()
+
+if [[ -n "${MOUNTDOCKERSOCKET}" ]]; then
+    options+=( "--docker-volumes" "${MOUNTDOCKERSOCKET}" )
+fi
+if [[ -n "${DOCKERNETWORKMODE}" ]]; then
+    options+=( "--docker-network-mode" "${DOCKERNETWORKMODE}" )
 fi
 
-if [[ "$SSHUSER" != "" ]]; then
-    SSH="--ssh-user=$SSHUSER $SSH"
+if [[ -n "${SSHUSER}" ]]; then
+    options+=( "--ssh-user" "${SSHUSER}" )
 fi
-if [[ "$SSHKEY" != "" ]]; then
-    SSH="--ssh-identity-file=$SSHKEY $SSH"
+if [[ -n "${SSHKEY}" ]]; then
+    options+=( "--ssh-identity-file" "${SSHKEY}" )
 fi
-if [[ "$SSHHOST" != "" ]]; then
-    SSH="--ssh-host=$SSHHOST $SSH"
+if [[ -n "${SSHHOST}" ]]; then
+    options+=( "--ssh-host" "${SSHHOST}" )
 fi
-if [[ "$SSHPORT" != "" ]]; then
-    SSH="--ssh-port=$SSHPORT $SSH"
+if [[ -n "${SSHPORT}" ]]; then
+    options+=( "--ssh-port" "${SSHPORT}" )
 fi
 
-if [[ "$CLONE_URL" != "" ]]; then
-    CLONE_URL="--clone-url ${CLONE_URL}"
+if [[ -n "${CLONE}_URL" ]]; then
+    options+=( "--clone-url" "${CLONE_URL}" )
 fi
 
 mkdir -p /tmp/builds
@@ -45,10 +47,7 @@ gitlab-runner register \
     --registration-token "${RUNNERTOKEN}" \
     --executor "${EXECUTOR:-docker}" \
     --docker-image "${DOCKERIMAGE:-alpine:latest}" \
-    ${MOUNTDOCKERSOCKET} \
-    ${DOCKERNETWORKMODE} \
-    ${SSH} \
-    ${CLONE_URL} \
+    "${options[@]}" \
     --description "${RUNNERNAME:-gitlab runner}" \
     --tag-list "${TAGLIST:-docker,auto}" \
     --run-untagged="true" \
