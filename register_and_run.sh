@@ -56,6 +56,7 @@ gitlab-runner register \
     --non-interactive \
     --builds-dir "${BUILDS_DIR}" \
     --cache-dir "${CACHE_DIR}" \
+    --docker-volumes "${CACHE_DIR}" \
     --url "${GITLABURL}" \
     --registration-token "${RUNNERTOKEN}" \
     --executor "${EXECUTOR}" \
