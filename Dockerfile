@@ -7,3 +7,4 @@ RUN apk update \
         ca-certificates
 
 ADD register_and_run.sh /
+ENTRYPOINT ["/register_and_run.sh"]

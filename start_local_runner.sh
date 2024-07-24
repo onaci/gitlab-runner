@@ -16,14 +16,15 @@ INTRO
 usage() { cat <<USAGE
 Usage:
 	$0 [--image docker-image] [--name runner-name]
-		<gitlab-url> <runner-token>
+		<gitlab-url> <token>
 		[-- docker options]
 
 Parameters:
 	<gitlab-url>:
-		The URL of the Gitlab instance
-	<runner-token>:
-		The runner token provided by Gitlab
+		The URL of the Gitlab instance.
+	<token>:
+		A runner token provided by Gitlab. A new runner token can be generated
+		from "Settings > CI/CD > New runner" from a project in Gitlab.
 	-- docker options:
 		Anything after '--' is passed to 'docker run'.
 		Use this to set extra environment variables, for example.
@@ -62,15 +63,15 @@ if [[ $# < 2 ]] ; then
 fi
 
 gitlab_url=$1
-runner_token=$2
+token=$2
 shift 2
 
 exec docker run --rm \
-	--entrypoint "/register_and_run.sh" \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	-e GITLABURL="$gitlab_url" \
-	-e RUNNERTOKEN="$runner_token" \
+	-e TOKEN="$token" \
 	-e RUNNERNAME="$runner_name" \
+	-e MOUNTDOCKERSOCKET="/var/lib/docker.sock:/var/lib/docker.sock" \
 	"$@" \
 	"$docker_image" \
 	run --user=gitlab-runner --working-directory=/home/gitlab-runner
