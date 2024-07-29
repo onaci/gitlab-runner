@@ -1,23 +1,19 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 
 error() { echo "$@" >&2 ; exit 1 ; }
 
 # Check for some required environment variables
 [[ -n "${GITLABURL}" ]] || error "GITLABURL environment variable must be set"
-[[ -n "${RUNNERTOKEN}" ]] || error "RUNNERTOKEN environment variable must be set"
+[[ -n "${TOKEN}" ]] || error "TOKEN environment variable must be set"
 
 # Set some sensible default values
 : "${EXECUTOR:=docker}"
 : "${DOCKERIMAGE:=alpine:latest}"
-: "${RUNNERNAME:=gitlab runner}"
-: "${TAGLIST:=docker,auto}"
 
 echo "GITLABURL: ${GITLABURL}"
-echo "RUNNERTOKEN: ${RUNNERTOKEN}"
+echo "TOKEN: [redacted]"
 echo "EXECUTOR: ${EXECUTOR}"
 echo "DOCKERIMAGE: ${DOCKERIMAGE}"
-echo "RUNNERNAME: ${RUNNERNAME}"
-echo "TAGLIST: ${TAGLIST}"
 echo "MOUNTDOCKERSOCKET: ${MOUNTDOCKERSOCKET}"
 echo "DOCKERNETWORKMODE: ${DOCKERNETWORKMODE}"
 
@@ -58,17 +54,12 @@ mkdir -p -m 777 "${BUILDS_DIR}" "${CACHE_DIR}"
 
 gitlab-runner register \
     --non-interactive \
-    --builds-dir "${BUILDS_DIR}" \
-    --cache-dir "${CACHE_DIR}" \
     --url "${GITLABURL}" \
-    --registration-token "${RUNNERTOKEN}" \
+    --token "${TOKEN}" \
     --executor "${EXECUTOR}" \
     --docker-image "${DOCKERIMAGE}" \
-    "${options[@]}" \
-    --description "${RUNNERNAME}" \
-    --tag-list "${TAGLIST}" \
-    --run-untagged="true" \
-    --locked="false" \
-    --access-level="not_protected"
+    --builds-dir "${BUILDS_DIR}" \
+    --cache-dir "${CACHE_DIR}" \
+    "${options[@]}"
 
 exec /entrypoint "$@"
