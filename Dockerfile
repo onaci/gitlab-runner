@@ -1,4 +1,4 @@
-FROM gitlab/gitlab-runner:alpine
+FROM gitlab/gitlab-runner:alpine-v17.4.0
 
 RUN apk update \
     && apk upgrade \
